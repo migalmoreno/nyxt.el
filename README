@@ -1,0 +1,33 @@
+# -*- mode: org; org-html-head-include-default-style: nil; org-html-postamble: nil; -*-
+#+OPTIONS: toc:nil
+* nyxt.el
+=nyxt.el= consists of custom logic to interact with [[https://nyxt.atlas.engineer/][Nyxt]] from Emacs. In contrast to [[https://github.com/ag91/emacs-with-nyxt][emacs-with-nyxt]], it doesn't predefine any Nyxt configuration and only bundles a couple of interactive helpers. Users are encouraged to use the entry point function =nyxt-run= to build their own functionality.
+
+This package requires the [[https://github.com/joaotavora/sly][SLY]] Emacs package to interact with the underlying Nyxt Lisp image. If you're an [[https://github.com/ch11ng/exwm][EXWM]] user, you'll also have the ability to make commands focus on the corresponding Nyxt window for a more seamless experience.
+
+To install the package, simply point to the package in your =load-path=.
+
+#+begin_src elisp
+(add-to-list 'load-path "/path/to/nyxt.el")
+#+end_src
+
+The easiest way to contribute to the project is to use the [[https://guix.gnu.org/][GNU Guix]] package manager and start a development environment at the root of the project by invoking the following commands:
+
+#+begin_src sh
+cd /path/to/nyxt.el
+guix shell -D --pure
+#+end_src
+
+By default, this package will spawn a Nyxt process with the =-e (start-slynk)= arguments so that it can connect to the Slynk process. However, you're free to modify the startup command and arguments, such as for development purposes.
+
+#+begin_src elisp
+(with-eval-after-load 'nyxt
+  (custom-set-variables
+   '(nyxt-path (executable-find "guix"))
+   '(nyxt-startup-flags '("shell" "-D" "-f" "path/to/nyxt/build-scripts/nyxt.scm"
+                          "--" "path/to/nyxt/nyxt" "-e" "(start-slynk)"))))
+#+end_src
+
+If you'd like to bind the default keybindings provided under the ~C-c x~ prefix keymap, ensure to include =nyxt-default-keybindings= in your Emacs initialization file.
+
+You can use the project's [[https://lists.sr.ht/~conses/nyxt.el][mailing list]] to send feedback, patches or open discussions. Bugs should be reported on the project's [[https://todo.sr.ht/~conses/nyxt.el][bug-tracker]].

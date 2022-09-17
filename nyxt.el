@@ -99,7 +99,7 @@ it switches to its corresponding workspace."
         (when (equal (current-buffer) nyxt-buffer)
           (exwm-input-set-local-simulation-keys nil))))))
 
-(cl-defun nyxt-run (sexps &key (focus nil) (autostart nil))
+(cl-defun nyxt-run (sexps &key (focus nil) (autostart nil) (autostart-delay 0))
   "Evaluate SEXPS in the context of the current Nyxt connection.
 
 If FOCUS, change focus to the Nyxt exwm workspace.  If AUTOSTART is non-nil
@@ -125,17 +125,21 @@ connect Slynk to it."
            (forward-line 0)
            (cond
             ((string-match (rx (: (+ any) "Slynk server started at port")) output)
-             (run-at-time 2 nil (lambda ()
-                                  (let ((sly-default-connection (nyxt-connect-to-slynk)))
-                                    (nyxt-exwm-focus-window :focus focus)
-                                    (nyxt-sly-eval sexps)))))
+             (run-at-time autostart-delay nil
+                          (lambda ()
+                            (let ((sly-default-connection (nyxt-connect-to-slynk)))
+                              (nyxt-exwm-focus-window :focus focus)
+                              (nyxt-sly-eval sexps)))))
             ((or (string-match (rx (: (+ any) "Deleting socket")) output)
                  (/= (process-exit-status process) 0))
              (setq nyxt-process nil)))))))
      ((or (nyxt--system-process-p)
           nyxt-process)
-      (nyxt-exwm-focus-window :focus focus)
-      (nyxt-sly-eval sexps)))))
+      (with-current-buffer (sly-mrepl--find-buffer)
+        (unless (string= (sly-current-package) "nyxt-user")
+          (sly-mrepl--eval-for-repl '(slynk-mrepl:guess-and-set-package "nyxt-user")))
+        (nyxt-exwm-focus-window :focus focus)
+        (nyxt-sly-eval sexps))))))
 
 (defun nyxt-extension-p (system &optional symbol)
   "Check if Nyxt extension SYSTEM exists in the ASDF source registry.
@@ -203,7 +207,7 @@ If ROAM-P, store it in the corresponding Org Roam capture TEMPLATE."
    `(buffer-load
      (first (nyxt::input->queries ,query))
      :buffer (make-buffer-focus))
-   :focus t :autostart t))
+   :focus t :autostart t :autostart-delay 2))
 
 ;;;###autoload
 (defun nyxt-change-theme (theme)

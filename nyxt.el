@@ -257,9 +257,9 @@ If ROAM-P, store it in the corresponding Org Roam capture TEMPLATE."
 
 ;;;###autoload
 (defun nyxt-default-keybindings ()
-  "Bind the `C-c x' prefix to `nyxt' commands."
+  "Bind the `C-c y' prefix to `nyxt' commands."
   (interactive)
-  (define-key mode-specific-map "x" 'nyxt-map))
+  (define-key mode-specific-map "y" 'nyxt-map))
 
 (define-prefix-command 'nyxt-map)
 (let ((map nyxt-map))

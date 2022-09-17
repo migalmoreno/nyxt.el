@@ -28,6 +28,6 @@ By default, this package will spawn a Nyxt process with the =-e (start-slynk)= a
                           "--" "path/to/nyxt/nyxt" "-e" "(start-slynk)"))))
 #+end_src
 
-If you'd like to bind the default keybindings provided under the ~C-c x~ prefix keymap, ensure to include =nyxt-default-keybindings= in your Emacs initialization file.
+If you'd like to bind the default keybindings provided under the ~C-c y~ prefix keymap, ensure to include =nyxt-default-keybindings= in your Emacs initialization file.
 
 You can use the project's [[https://lists.sr.ht/~conses/nyxt.el][mailing list]] to send feedback, patches or open discussions. Bugs should be reported on the project's [[https://todo.sr.ht/~conses/nyxt.el][bug-tracker]].

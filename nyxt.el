@@ -53,12 +53,14 @@
 (cl-defun nyxt-sly-eval (sexps &rest args &key &allow-other-keys)
   "Evaluate SEXPS and ARGS with Slynk.
 It automatically attaches a Slynk process if needed."
-  (let ((sly-default-connection (or (nyxt--slynk-connected-p)
-                                    (nyxt-connect-to-slynk)))
-        (sexp (if (every #'consp sexps)
-                  (mapconcat #'prin1-to-string sexps "")
-                (prin1-to-string sexps))))
-    (apply #'sly-eval `(slynk:interactive-eval-region ,sexp) args)))
+  (if (or (nyxt--system-process-p) nyxt-process)
+    (let ((sly-default-connection (or (nyxt--slynk-connected-p)
+                                      (nyxt-connect-to-slynk)))
+          (sexp (if (every #'consp sexps)
+                    (mapconcat #'prin1-to-string sexps "")
+                  (prin1-to-string sexps))))
+      (apply #'sly-eval `(slynk:interactive-eval-region ,sexp) args))
+    (error "There is no Nyxt process currently running")))
 
 (defun nyxt--system-process-p ()
   "Return non-nil if the Nyxt system process is currently running."
@@ -145,9 +147,11 @@ connect Slynk to it."
   "Check if Nyxt extension SYSTEM exists in the ASDF source registry.
 Optionally test if SYMBOL is bound."
   (if symbol
-      (string-match "NIL" (nyxt-sly-eval `(find-symbol ,(capitalize symbol)
-                                                       ,(sly-keywordify (intern system)))))
-    (not (string= (downcase (nyxt-sly-eval `(asdf:find-system ,system nil))) "nil"))))
+      (when-let ((symbol (nyxt-sly-eval `(find-symbol ,(capitalize symbol)
+                                                      ,(sly-keywordify (intern system))))))
+        (string-match symbol "NIL"))
+    (when-let ((system (nyxt-sly-eval `(asdf:find-system ,system nil))))
+      (not (string= (downcase system) "nil")))))
 
 (when (require 'exwm nil t)
   (org-link-set-parameters

@@ -147,9 +147,9 @@ connect Slynk to it."
   "Check if Nyxt extension SYSTEM exists in the ASDF source registry.
 Optionally test if SYMBOL is bound."
   (if symbol
-      (when-let ((symbol (nyxt-sly-eval `(find-symbol ,(capitalize symbol)
+      (when-let ((symbol (nyxt-sly-eval `(find-symbol ,(upcase symbol)
                                                       ,(sly-keywordify (intern system))))))
-        (string-match symbol "NIL"))
+        (not (string-match "NIL" symbol)))
     (when-let ((system (nyxt-sly-eval `(asdf:find-system ,system nil))))
       (not (string= (downcase system) "nil")))))
 

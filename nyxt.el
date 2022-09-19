@@ -135,11 +135,13 @@ connect Slynk to it."
              (setq nyxt-process nil)))))))
      ((or (nyxt--system-process-p)
           nyxt-process)
-      (with-current-buffer (sly-mrepl--find-buffer)
-        (unless (string= (sly-current-package) "nyxt-user")
-          (sly-mrepl--eval-for-repl '(slynk-mrepl:guess-and-set-package "nyxt-user")))
-        (nyxt-sly-eval sexps)
-        (nyxt-exwm-focus-window :focus focus))))))
+      (if (sly-mrepl--find-buffer)
+        (with-current-buffer (sly-mrepl--find-buffer)
+          (unless (string= (sly-current-package) "nyxt-user")
+            (sly-mrepl--eval-for-repl '(slynk-mrepl:guess-and-set-package "nyxt-user")))
+          (nyxt-sly-eval sexps)
+          (nyxt-exwm-focus-window :focus focus))
+        (error "No SLY REPL buffer found"))))))
 
 (defun nyxt-extension-p (system &optional symbol)
   "Check if Nyxt extension SYSTEM exists in the ASDF source registry.
@@ -177,7 +179,7 @@ Optionally test if SYMBOL is bound."
 (defun nyxt-init ()
   "Start Nyxt and focus on its window."
   (interactive)
-  (nyxt-run '(nothing) :focus t :autostart t))
+  (nyxt-run nil :focus t :autostart t))
 
 ;;;###autoload
 (defun nyxt-quit ()

@@ -54,9 +54,7 @@
   "Evaluate SEXPS and ARGS with Slynk.
 It automatically attaches a Slynk process if needed."
   (if (or (nyxt--system-process-p) nyxt-process)
-    (let ((sly-default-connection (or (nyxt--slynk-connected-p)
-                                      (nyxt-connect-to-slynk)))
-          (sexp (if (every #'consp sexps)
+    (let ((sexp (if (every #'consp sexps)
                     (mapconcat #'prin1-to-string sexps "")
                   (prin1-to-string sexps))))
       (apply #'sly-eval `(slynk:interactive-eval-region ,sexp) args))
@@ -130,8 +128,8 @@ connect Slynk to it."
              (run-at-time autostart-delay nil
                           (lambda ()
                             (let ((sly-default-connection (nyxt-connect-to-slynk)))
-                              (nyxt-exwm-focus-window :focus focus)
-                              (nyxt-sly-eval sexps)))))
+                              (nyxt-sly-eval sexps)
+                              (nyxt-exwm-focus-window :focus focus)))))
             ((or (string-match (rx (: (+ any) "Deleting socket")) output)
                  (/= (process-exit-status process) 0))
              (setq nyxt-process nil)))))))
@@ -140,8 +138,8 @@ connect Slynk to it."
       (with-current-buffer (sly-mrepl--find-buffer)
         (unless (string= (sly-current-package) "nyxt-user")
           (sly-mrepl--eval-for-repl '(slynk-mrepl:guess-and-set-package "nyxt-user")))
-        (nyxt-exwm-focus-window :focus focus)
-        (nyxt-sly-eval sexps))))))
+        (nyxt-sly-eval sexps)
+        (nyxt-exwm-focus-window :focus focus))))))
 
 (defun nyxt-extension-p (system &optional symbol)
   "Check if Nyxt extension SYSTEM exists in the ASDF source registry.

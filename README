@@ -15,7 +15,7 @@ The easiest way to contribute to the project is to use the [[https://guix.gnu.or
 
 #+begin_src sh
 cd /path/to/nyxt.el
-guix shell -D --pure
+guix shell --pure
 #+end_src
 
 By default, this package will spawn a Nyxt process with the =-e (start-slynk)= arguments so that it can connect to the Slynk process. However, you're free to modify the startup command and arguments, such as for development purposes.
@@ -28,6 +28,6 @@ By default, this package will spawn a Nyxt process with the =-e (start-slynk)= a
                           "--" "path/to/nyxt/nyxt" "-e" "(start-slynk)"))))
 #+end_src
 
-If you'd like to bind the default keybindings provided under the ~C-c y~ prefix keymap, ensure to include =nyxt-default-keybindings= in your Emacs initialization file.
+If you'd like to bind the default keybindings provided under the ~C-c y~ prefix keymap, ensure to include =nyxt-default-keybindings= in your Emacs initialization file. You should also have a call to =sly-setup= in your initialization file, otherwise the first time =nyxt-run= is executed won't prompt you with a SLY REPL.
 
 You can use the project's [[https://lists.sr.ht/~conses/nyxt.el][mailing list]] to send feedback, patches or open discussions. Bugs should be reported on the project's [[https://todo.sr.ht/~conses/nyxt.el][bug-tracker]].

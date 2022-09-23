@@ -2,13 +2,31 @@
 
 ;;; Copyright ©2022 conses <contact@conses.eu>
 
+;; Author: conses <contact@conses.eu>
+;; Version: 0.1.0
+;; Keywords: tools, processes
+;; URL: https://git.sr.ht/~conses/nyxt.el
+;; Package-Requires: ((emacs "25.1") sly cl-lib)
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 ;;; Commentary:
-;; Helper functions to interact with a Nyxt process.
+;; This package provides functions to interact with a Nyxt process.
 
 ;;; Code:
 
 (require 'sly)
-(require 'ol)
 (require 'cl-lib)
 
 (defgroup nyxt nil
@@ -157,6 +175,7 @@ Optionally test if SYMBOL is bound."
       (not (string= (downcase system) "nil")))))
 
 (when (require 'exwm nil t)
+  (require 'ol)
   (org-link-set-parameters
    "nyxt"
    :store #'nyxt-store-link))
@@ -167,6 +186,7 @@ Optionally test if SYMBOL is bound."
                  (nyxt--system-process-p))
              (when (require 'exwm nil t)
                (string-match "Nyxt:" (buffer-name (current-buffer)))))
+    (require 'ol)
     (org-link-store-props
      :type "nyxt"
      :link  (substring
@@ -270,12 +290,12 @@ If ROAM-P, store it in the corresponding Org Roam capture TEMPLATE."
 
 (define-prefix-command 'nyxt-map)
 (let ((map nyxt-map))
-    (define-key map "i" #'nyxt-init)
-    (define-key map "q" #'nyxt-quit)
-    (define-key map "s" #'nyxt-search)
-    (define-key map "w" #'nyxt-copy-url)
-    (define-key map "k" #'nyxt-delete-current-buffer)
-    (define-key map "v" #'nyxt-set-transient-map))
+  (define-key map "i" #'nyxt-init)
+  (define-key map "q" #'nyxt-quit)
+  (define-key map "s" #'nyxt-search)
+  (define-key map "w" #'nyxt-copy-url)
+  (define-key map "k" #'nyxt-delete-current-buffer)
+  (define-key map "v" #'nyxt-set-transient-map))
 
 (provide 'nyxt)
 ;;; nyxt.el ends here

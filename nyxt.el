@@ -122,7 +122,10 @@ it switches to its corresponding workspace."
 
 If FOCUS, change focus to the Nyxt exwm workspace.  If AUTOSTART is non-nil
 and a Nyxt system process is not found, it will automatically create one and
-connect Slynk to it."
+connect Slynk to it.
+
+Additionally, you may specify an AUTOSTART-DELAY to invoke Nyxt features that
+might require some delay to be correctly loaded."
   (let* ((sly-log-events nil)
          (sly-default-connection (or (nyxt--slynk-connected-p)
                                      (when (or nyxt-process
@@ -145,7 +148,8 @@ connect Slynk to it."
             ((string-match (rx (: (+ any) "Slynk server started at port")) output)
              (run-at-time autostart-delay nil
                           (lambda ()
-                            (while (not (sly-connected-p))
+                            (while (or (not (sly-connected-p))
+                                       (not (nyxt--slynk-connected-p)))
                               (nyxt-connect-to-slynk)
                               (sleep-for 0.1))
                             (nyxt-sly-eval sexps)

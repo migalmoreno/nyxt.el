@@ -1,6 +1,6 @@
 ;;; nyxt.el --- Emacs integration with Nyxt  -*- lexical-binding: t; -*-
 
-;;; Copyright ©2022 conses <contact@conses.eu>
+;; Copyright ©2022 conses <contact@conses.eu>
 
 ;; Author: conses <contact@conses.eu>
 ;; Version: 0.1.0
@@ -113,9 +113,7 @@ it switches to its corresponding workspace."
                 (if (get-buffer-window nyxt-buffer)
                     (select-window (get-buffer-window nyxt-buffer))
                   (switch-to-buffer-other-window nyxt-buffer))
-              (switch-to-buffer nyxt-buffer)))
-        (when (equal (current-buffer) nyxt-buffer)
-          (exwm-input-set-local-simulation-keys nil))))))
+              (switch-to-buffer nyxt-buffer)))))))
 
 (cl-defun nyxt-run (sexps &key (focus nil) (autostart nil) (autostart-delay 0))
   "Evaluate SEXPS in the context of the current Nyxt connection.

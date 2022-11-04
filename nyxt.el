@@ -27,7 +27,8 @@
 ;;; Code:
 
 (require 'sly)
-(require 'cl-lib)
+(eval-when-compile
+  (require 'cl-lib))
 
 (defgroup nyxt nil
   "Nyxt browser integrations and tweaks."
@@ -51,6 +52,9 @@
 (defvar nyxt-process nil
   "Hold the current Nyxt process.")
 
+(defvar nyxt-slynk-connection nil
+  "The current Slynk connection for communicating with Nyxt.")
+
 (defvar nyxt-map nil
   "Map to bind `nyxt' commands to.")
 
@@ -58,7 +62,7 @@
 (defun nyxt-connect-to-slynk ()
   "Connect to the Slynk server to interact with the Nyxt browser."
   (interactive)
-  (sly-connect "localhost" nyxt-port))
+  (setq nyxt-slynk-connection (sly-connect "localhost" nyxt-port)))
 
 ;;;###autoload
 (defun nyxt--slynk-connected-p ()
@@ -126,10 +130,7 @@ connect Slynk to it.
 Additionally, you may specify an AUTOSTART-DELAY to invoke Nyxt features that
 might require some delay to be correctly loaded."
   (let* ((sly-log-events nil)
-         (sly-default-connection (or (nyxt--slynk-connected-p)
-                                     (when (or nyxt-process
-                                               (nyxt--system-process-p))
-                                       (nyxt-connect-to-slynk)))))
+         (sly-default-connection nyxt-slynk-connection))
     (cond
      ((and (not (nyxt--system-process-p))
            (not nyxt-process)
@@ -172,12 +173,7 @@ Optionally test if SYMBOL is bound."
     (when-let ((system (nyxt-sly-eval `(asdf:find-system ,system nil))))
       (not (string= (downcase system) "nil")))))
 
-(when (require 'exwm nil t)
-  (require 'ol)
-  (org-link-set-parameters
-   "nyxt"
-   :store #'nyxt-store-link))
-
+;;;###autoload
 (defun nyxt-store-link ()
   "Store the current page link via Org mode."
   (when (and (or nyxt-process

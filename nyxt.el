@@ -202,7 +202,10 @@ Optionally test if SYMBOL is bound."
 (defun nyxt-quit ()
   "Quit the Nyxt process."
   (interactive)
-  (nyxt-run '(quit)))
+  (ignore-errors
+    (kill-process nyxt-process))
+  (setq nyxt-process nil)
+  (setq nyxt-slynk-connection nil))
 
 ;;;###autoload
 (cl-defun nyxt-capture (template &key (roam-p nil))

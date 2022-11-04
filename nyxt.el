@@ -91,34 +91,32 @@
            (list-system-processes)))
 
 ;;;###autoload
-(cl-defun nyxt-exwm-focus-window (&key (focus nil))
+(defun nyxt-exwm-focus-window ()
   "Handle Nyxt's EXWM window.
 
-It focuses on Nyxt's Emacs buffer if FOCUS, and if exwm is enabled,
-it switches to its corresponding workspace."
-  (interactive
-   (when current-prefix-arg
-     (list :focus t)))
+Switch to the corresponding EXWM workspace and if the Nyxt window is visible,
+focus on it, otherwise switch to its underlying buffer."
+  (interactive)
   (when (require 'exwm nil t)
-    (let* ((nyxt-buffer (car (cl-remove-if-not (lambda (buffer)
-                                                 (string-match "Nyxt:" (buffer-name buffer)))
-                                               (buffer-list))))
-           (exwm-workspace (window-frame (or (get-buffer-window nyxt-buffer t)
-                                             (when focus
-                                               (with-current-buffer nyxt-buffer
-                                                 (set-window-buffer (frame-selected-window exwm--frame)
-                                                                    (current-buffer))
-                                                 (get-buffer-window (current-buffer) t)))))))
-      (if focus
-          (progn
-            (exwm-workspace-switch (exwm-workspace--position exwm-workspace))
-            (if (and (= (exwm-workspace--position exwm-workspace--current)
-                        (exwm-workspace--position exwm-workspace))
-                     (> (length (window-list exwm-workspace)) 1))
-                (if (get-buffer-window nyxt-buffer)
-                    (select-window (get-buffer-window nyxt-buffer))
-                  (switch-to-buffer-other-window nyxt-buffer))
-              (switch-to-buffer nyxt-buffer)))))))
+    (when-let* ((nyxt-buffer
+                 (car (cl-remove-if-not
+                       (lambda (buffer)
+                         (string-match "Nyxt:" (buffer-name buffer)))
+                       (buffer-list))))
+                (exwm-workspace
+                 (window-frame (or (get-buffer-window nyxt-buffer t)
+                                   (with-current-buffer nyxt-buffer
+                                     (set-window-buffer (frame-selected-window exwm--frame)
+                                                        (current-buffer))
+                                     (get-buffer-window (current-buffer) t))))))
+      (exwm-workspace-switch (exwm-workspace--position exwm-workspace))
+      (if (and (= (exwm-workspace--position exwm-workspace--current)
+                  (exwm-workspace--position exwm-workspace))
+               (> (length (window-list exwm-workspace)) 1))
+          (if (get-buffer-window nyxt-buffer)
+              (select-window (get-buffer-window nyxt-buffer))
+            (switch-to-buffer-other-window nyxt-buffer))
+        (switch-to-buffer nyxt-buffer)))))
 
 (cl-defun nyxt-run (sexps &key (focus nil) (autostart nil) (autostart-delay 0))
   "Evaluate SEXPS in the context of the current Nyxt connection.
@@ -153,14 +151,14 @@ might require some delay to be correctly loaded."
                                        (not nyxt-slynk-connection))
                               (nyxt-connect-to-slynk)
                               (sleep-for 0.1))
-                            (nyxt-exwm-focus-window :focus focus)
+                            (and focus (nyxt-exwm-focus-window))
                             (nyxt-sly-eval sexps))))
             ((or (string-match (rx (: (+ any) "Deleting socket")) output)
                  (/= (process-exit-status process) 0))
              (setq nyxt-process nil)))))))
      ((or (nyxt--system-process-p)
           nyxt-process)
-      (nyxt-exwm-focus-window :focus focus)
+      (and focus (nyxt-exwm-focus-window))
       (nyxt-sly-eval sexps)))))
 
 (defun nyxt-extension-p (system &optional symbol)

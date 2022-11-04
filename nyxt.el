@@ -86,7 +86,7 @@
 (defun nyxt--system-process-p ()
   "Return non-nil if the Nyxt system process is currently running."
   (cl-some (lambda (pid)
-             (string-match (rx (: (* any) "nyxt" (* any)))
+             (string-match (rx (* any) "nyxt" (* any))
                            (assoc-default 'comm (process-attributes pid))))
            (list-system-processes)))
 
@@ -143,7 +143,7 @@ might require some delay to be correctly loaded."
            (goto-char (point-max))
            (forward-line 0)
            (cond
-            ((string-match (rx (: (+ any) "Slynk server started at port")) output)
+            ((string-match (rx (+ any) "Slynk server started at port") output)
              (run-at-time autostart-delay nil
                           (lambda ()
                             (while (or (not (sly-connected-p))
@@ -153,7 +153,7 @@ might require some delay to be correctly loaded."
                               (sleep-for 0.1))
                             (and focus (nyxt-exwm-focus-window))
                             (nyxt-sly-eval sexps))))
-            ((or (string-match (rx (: (+ any) "Deleting socket")) output)
+            ((or (string-match (rx (+ any) "Deleting socket") output)
                  (/= (process-exit-status process) 0))
              (setq nyxt-process nil)))))))
      ((or (nyxt--system-process-p)

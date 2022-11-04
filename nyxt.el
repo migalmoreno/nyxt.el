@@ -138,29 +138,36 @@ might require some delay to be correctly loaded."
              (run-at-time autostart-delay nil
                           (lambda ()
                             (while (or (not (sly-connected-p))
-                                       (not (nyxt--slynk-connected-p))
-                                       (not nyxt-slynk-connection))
-                              (nyxt-connect-to-slynk)
+                                       (not (nyxt--sly-connected-p))
+                                       (not nyxt-sly-connection))
+                              (nyxt-sly-connect)
                               (sleep-for 0.1))
                             (and focus (nyxt-exwm-focus-window))
-                            (nyxt-sly-eval sexps))))
+                            (nyxt--sly-eval sexps))))
             ((or (string-match (rx (+ any) "Deleting socket") output)
                  (/= (process-exit-status process) 0))
-             (setq nyxt-process nil)))))))
+             (setq nyxt-process nil)
+             (setq nyxt-sly-connection nil)))))))
      ((or (nyxt--system-process-p)
           nyxt-process)
       (and focus (nyxt-exwm-focus-window))
-      (nyxt-sly-eval sexps)))))
+      (nyxt--sly-eval sexps)))))
 
 (defun nyxt-extension-p (system &optional symbol)
   "Check if Nyxt extension SYSTEM exists in the ASDF source registry.
-Optionally test if SYMBOL is bound."
-  (if symbol
-      (when-let ((symbol (nyxt-sly-eval `(find-symbol ,(upcase symbol)
+Optionally test if the extension's SYMBOL is bound."
+  (when-let ((sys (nyxt--sly-eval `(asdf:find-system ,system nil))))
+    (if symbol
+        (when-let ((sym (nyxt--sly-eval `(find-symbol ,(upcase symbol)
                                                       ,(sly-keywordify (intern system))))))
-        (not (string-match "NIL" symbol)))
-    (when-let ((system (nyxt-sly-eval `(asdf:find-system ,system nil))))
-      (not (string= (downcase system) "nil")))))
+          (not (string-match "NIL" sym)))
+      (not (string= (downcase sys) "nil")))))
+
+;;;###autoload
+(defun nyxt-sly-connect ()
+  "Connect to a Slynk server via Sly to interact with the Nyxt browser."
+  (interactive)
+  (setq nyxt-sly-connection (sly-connect "localhost" nyxt-port)))
 
 ;;;###autoload
 (defun nyxt-store-link ()

@@ -69,14 +69,15 @@
 
 ;;;###autoload
 (cl-defun nyxt-sly-eval (sexps &rest args &key &allow-other-keys)
-  "Evaluate SEXPS and ARGS with Slynk.
-It automatically attaches a Slynk process if needed."
-  (if (or (nyxt--system-process-p) nyxt-process)
-    (let ((sexp (if (every #'consp sexps)
-                    (mapconcat #'prin1-to-string sexps "")
-                  (prin1-to-string sexps))))
-      (apply #'sly-eval `(slynk:interactive-eval-region ,sexp) args))
-    (error "There is no Nyxt process currently running")))
+  "Evaluate SEXPS and ARGS in the current Nyxt Slynk connection."
+  (when-let ((sexp (if (every #'consp sexps)
+                       (mapconcat #'prin1-to-string sexps "")
+                     (prin1-to-string sexps)))
+             (sly-buffer (sly-mrepl--find-buffer nyxt-slynk-connection)))
+    (with-current-buffer sly-buffer
+      (unless (string= (sly-current-package) "nyxt-user")
+        (sly-mrepl--eval-for-repl '(slynk-mrepl:guess-and-set-package "nyxt-user")))
+      (apply #'sly-eval `(slynk:interactive-eval-region ,sexp) args))))
 
 (defun nyxt--system-process-p ()
   "Return non-nil if the Nyxt system process is currently running."
@@ -147,24 +148,19 @@ might require some delay to be correctly loaded."
              (run-at-time autostart-delay nil
                           (lambda ()
                             (while (or (not (sly-connected-p))
-                                       (not (nyxt--slynk-connected-p)))
+                                       (not (nyxt--slynk-connected-p))
+                                       (not nyxt-slynk-connection))
                               (nyxt-connect-to-slynk)
                               (sleep-for 0.1))
-                            (nyxt-sly-eval sexps)
-                            (nyxt-exwm-focus-window :focus focus))))
+                            (nyxt-exwm-focus-window :focus focus)
+                            (nyxt-sly-eval sexps))))
             ((or (string-match (rx (: (+ any) "Deleting socket")) output)
                  (/= (process-exit-status process) 0))
              (setq nyxt-process nil)))))))
      ((or (nyxt--system-process-p)
           nyxt-process)
-      (if (sly-mrepl--find-buffer)
-          (progn
-            (with-current-buffer (sly-mrepl--find-buffer)
-              (unless (string= (sly-current-package) "nyxt-user")
-                (sly-mrepl--eval-for-repl '(slynk-mrepl:guess-and-set-package "nyxt-user")))
-              (nyxt-sly-eval sexps))
-            (nyxt-exwm-focus-window :focus focus))
-        (error "No SLY REPL buffer found"))))))
+      (nyxt-exwm-focus-window :focus focus)
+      (nyxt-sly-eval sexps)))))
 
 (defun nyxt-extension-p (system &optional symbol)
   "Check if Nyxt extension SYSTEM exists in the ASDF source registry.

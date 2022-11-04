@@ -72,7 +72,8 @@
              (sly-buffer (sly-mrepl--find-buffer nyxt-sly-connection)))
     (with-current-buffer sly-buffer
       (unless (string= (sly-current-package) "nyxt-user")
-        (sly-mrepl--eval-for-repl '(slynk-mrepl:guess-and-set-package "nyxt-user")))
+        (sly-mrepl--eval-for-repl
+         '(slynk-mrepl:guess-and-set-package "nyxt-user")))
       (apply #'sly-eval `(slynk:interactive-eval-region ,sexp) args))))
 
 (defun nyxt--system-process-p ()
@@ -97,8 +98,9 @@ focus on it, otherwise switch to its underlying buffer."
                 (exwm-workspace
                  (window-frame (or (get-buffer-window nyxt-buffer t)
                                    (with-current-buffer nyxt-buffer
-                                     (set-window-buffer (frame-selected-window exwm--frame)
-                                                        (current-buffer))
+                                     (set-window-buffer
+                                      (frame-selected-window exwm--frame)
+                                      (current-buffer))
                                      (get-buffer-window (current-buffer) t))))))
       (exwm-workspace-switch (exwm-workspace--position exwm-workspace))
       (if (and (= (exwm-workspace--position exwm-workspace--current)
@@ -126,7 +128,8 @@ might require some delay to be correctly loaded."
            (not nyxt-process)
            autostart)
       (message "Launching Nyxt...")
-      (setq nyxt-process (apply #'start-process "nyxt" nil nyxt-path nyxt-startup-flags))
+      (setq nyxt-process
+            (apply #'start-process "nyxt" nil nyxt-path nyxt-startup-flags))
       (set-process-filter
        nyxt-process
        (lambda (process output)
@@ -158,8 +161,9 @@ might require some delay to be correctly loaded."
 Optionally test if the extension's SYMBOL is bound."
   (when-let ((sys (nyxt--sly-eval `(asdf:find-system ,system nil))))
     (if symbol
-        (when-let ((sym (nyxt--sly-eval `(find-symbol ,(upcase symbol)
-                                                      ,(sly-keywordify (intern system))))))
+        (when-let ((sym (nyxt--sly-eval
+                         `(find-symbol ,(upcase symbol)
+                                       ,(sly-keywordify (intern system))))))
           (not (string-match "NIL" sym)))
       (not (string= (downcase sys) "nil")))))
 
@@ -181,7 +185,8 @@ Optionally test if the extension's SYMBOL is bound."
      :type "nyxt"
      :link  (substring
              (if (nyxt-extension-p "nx-router" "trace-url")
-                 (nyxt--sly-eval '(render-url (nx-router:trace-url (url (current-buffer)))))
+                 (nyxt--sly-eval
+                  '(render-url (nx-router:trace-url (url (current-buffer)))))
                (nyxt--sly-eval '(render-url (url (current-buffer)))))
              1 -1)
      :description (substring (nyxt--sly-eval '(title (current-buffer))) 1 -1))))

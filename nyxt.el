@@ -83,12 +83,11 @@
                            (assoc-default 'comm (process-attributes pid))))
            (list-system-processes)))
 
-(defun nyxt-exwm-focus-window ()
+(defun nyxt--exwm-focus-window ()
   "Handle Nyxt's EXWM window.
 
 Switch to the corresponding EXWM workspace and if the Nyxt window is visible,
 focus on it, otherwise switch to its underlying buffer."
-  (interactive)
   (when (require 'exwm nil t)
     (when-let* ((nyxt-buffer
                  (car (cl-remove-if-not
@@ -156,7 +155,7 @@ might require some delay to be correctly loaded."
       (and focus (nyxt-exwm-focus-window))
       (nyxt--sly-eval sexps)))))
 
-(defun nyxt-extension-p (system &optional symbol)
+(defun nyxt--extension-p (system &optional symbol)
   "Check if Nyxt extension SYSTEM exists in the ASDF source registry.
 Optionally test if the extension's SYMBOL is bound."
   (when-let ((sys (nyxt--sly-eval `(asdf:find-system ,system nil))))
@@ -167,13 +166,6 @@ Optionally test if the extension's SYMBOL is bound."
           (not (string-match "NIL" sym)))
       (not (string= (downcase sys) "nil")))))
 
-;;;###autoload
-(defun nyxt-sly-connect ()
-  "Connect to a Slynk server via Sly to interact with the Nyxt browser."
-  (interactive)
-  (setq nyxt-sly-connection (sly-connect "localhost" nyxt-port)))
-
-;;;###autoload
 (defun nyxt-store-link ()
   "Store the current page link via Org mode."
   (when (and (or nyxt-process
@@ -184,12 +176,18 @@ Optionally test if the extension's SYMBOL is bound."
     (org-link-store-props
      :type "nyxt"
      :link  (substring
-             (if (nyxt-extension-p "nx-router" "trace-url")
+             (if (nyxt--extension-p "nx-router" "trace-url")
                  (nyxt--sly-eval
                   '(render-url (nx-router:trace-url (url (current-buffer)))))
                (nyxt--sly-eval '(render-url (url (current-buffer)))))
              1 -1)
      :description (substring (nyxt--sly-eval '(title (current-buffer))) 1 -1))))
+
+;;;###autoload
+(defun nyxt-sly-connect ()
+  "Connect to a Slynk server via Sly to interact with the Nyxt browser."
+  (interactive)
+  (setq nyxt-sly-connection (sly-connect "localhost" nyxt-port)))
 
 ;;;###autoload
 (defun nyxt-init ()
@@ -237,7 +235,7 @@ If ROAM-P, store it in the corresponding Org Roam capture TEMPLATE."
   "Switch to THEME in Nyxt."
   (interactive
    (list (completing-read "Theme:" custom-known-themes)))
-  (if (nyxt-extension-p "nx-tailor" "select-theme")
+  (if (nyxt--extension-p "nx-tailor" "select-theme")
       (nyxt-run
        `(nx-tailor:select-theme ,theme))
     (error "You need the nx-tailor extension to change Nyxt theme")))
@@ -268,6 +266,7 @@ If ROAM-P, store it in the corresponding Org Roam capture TEMPLATE."
   (nyxt-run
    '(nyxt/document-mode::scroll-up)))
 
+;;;###autoload
 (defun nyxt-set-transient-map ()
   "Set a transient map for transient `nyxt' commands."
   (interactive)

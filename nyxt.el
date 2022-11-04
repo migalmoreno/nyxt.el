@@ -50,34 +50,26 @@
   :group 'nyxt)
 
 (defvar nyxt-process nil
-  "Hold the current Nyxt process.")
+  "The current Nyxt process.")
 
-(defvar nyxt-slynk-connection nil
-  "The current Slynk connection for communicating with Nyxt.")
+(defvar nyxt-sly-connection nil
+  "The current Sly connection for communicating with Nyxt.")
 
 (defvar nyxt-map nil
   "Map to bind `nyxt' commands to.")
 
-;;;###autoload
-(defun nyxt-connect-to-slynk ()
-  "Connect to the Slynk server to interact with the Nyxt browser."
-  (interactive)
-  (setq nyxt-slynk-connection (sly-connect "localhost" nyxt-port)))
-
-;;;###autoload
-(defun nyxt--slynk-connected-p ()
+(defun nyxt--sly-connected-p ()
   "Indicate whether there's currently a connection to `nyxt-port'."
   (cl-find-if (lambda (p)
                 (= (sly-connection-port p) nyxt-port))
               sly-net-processes))
 
-;;;###autoload
-(cl-defun nyxt-sly-eval (sexps &rest args &key &allow-other-keys)
-  "Evaluate SEXPS and ARGS in the current Nyxt Slynk connection."
+(cl-defun nyxt--sly-eval (sexps &rest args &key &allow-other-keys)
+  "Evaluate SEXPS and ARGS in the current Nyxt Sly connection."
   (when-let ((sexp (if (every #'consp sexps)
                        (mapconcat #'prin1-to-string sexps "")
                      (prin1-to-string sexps)))
-             (sly-buffer (sly-mrepl--find-buffer nyxt-slynk-connection)))
+             (sly-buffer (sly-mrepl--find-buffer nyxt-sly-connection)))
     (with-current-buffer sly-buffer
       (unless (string= (sly-current-package) "nyxt-user")
         (sly-mrepl--eval-for-repl '(slynk-mrepl:guess-and-set-package "nyxt-user")))
@@ -90,7 +82,6 @@
                            (assoc-default 'comm (process-attributes pid))))
            (list-system-processes)))
 
-;;;###autoload
 (defun nyxt-exwm-focus-window ()
   "Handle Nyxt's EXWM window.
 
@@ -123,16 +114,16 @@ focus on it, otherwise switch to its underlying buffer."
 
 If FOCUS, change focus to the Nyxt exwm workspace.  If AUTOSTART is non-nil
 and a Nyxt system process is not found, it will automatically create one and
-connect Slynk to it.
+connect Sly to it.
 
 Additionally, you may specify an AUTOSTART-DELAY to invoke Nyxt features that
 might require some delay to be correctly loaded."
   (let* ((sly-log-events nil)
-         (sly-default-connection nyxt-slynk-connection))
+         (sly-default-connection nyxt-sly-connection))
     (cond
      ((and (not (nyxt--system-process-p))
+           (not (nyxt--sly-connected-p))
            (not nyxt-process)
-           (not (nyxt--slynk-connected-p))
            autostart)
       (message "Launching Nyxt...")
       (setq nyxt-process (apply #'start-process "nyxt" nil nyxt-path nyxt-startup-flags))
@@ -183,12 +174,10 @@ Optionally test if SYMBOL is bound."
      :type "nyxt"
      :link  (substring
              (if (nyxt-extension-p "nx-router" "trace-url")
-                 (nyxt-sly-eval '(render-url (nx-router:trace-url (url (current-buffer)))))
-               (nyxt-sly-eval '(render-url (url (current-buffer)))))
+                 (nyxt--sly-eval '(render-url (nx-router:trace-url (url (current-buffer)))))
+               (nyxt--sly-eval '(render-url (url (current-buffer)))))
              1 -1)
-     :description (substring
-                   (nyxt-sly-eval '(title (current-buffer)))
-                   1 -1))))
+     :description (substring (nyxt--sly-eval '(title (current-buffer))) 1 -1))))
 
 ;;;###autoload
 (defun nyxt-init ()
@@ -203,7 +192,7 @@ Optionally test if SYMBOL is bound."
   (ignore-errors
     (kill-process nyxt-process))
   (setq nyxt-process nil)
-  (setq nyxt-slynk-connection nil))
+  (setq nyxt-sly-connection nil))
 
 ;;;###autoload
 (cl-defun nyxt-capture (template &key (roam-p nil))

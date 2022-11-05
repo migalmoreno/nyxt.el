@@ -144,7 +144,7 @@ might require some delay to be correctly loaded."
                                        (not nyxt-sly-connection))
                               (nyxt-sly-connect)
                               (sleep-for 0.1))
-                            (and focus (nyxt-exwm-focus-window))
+                            (and focus (nyxt--exwm-focus-window))
                             (nyxt--sly-eval sexps))))
             ((or (string-match (rx (+ any) "Deleting socket") output)
                  (/= (process-exit-status process) 0))
@@ -152,7 +152,7 @@ might require some delay to be correctly loaded."
              (setq nyxt-sly-connection nil)))))))
      ((or (nyxt--system-process-p)
           nyxt-process)
-      (and focus (nyxt-exwm-focus-window))
+      (and focus (nyxt--exwm-focus-window))
       (nyxt--sly-eval sexps)))))
 
 (defun nyxt--extension-p (system &optional symbol)

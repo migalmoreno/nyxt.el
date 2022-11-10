@@ -72,9 +72,13 @@
              (sly-buffer (sly-mrepl--find-buffer nyxt-sly-connection)))
     (with-current-buffer sly-buffer
       (unless (string= (sly-current-package) "nyxt-user")
-        (sly-mrepl--eval-for-repl
-         '(slynk-mrepl:guess-and-set-package "nyxt-user")))
-      (apply #'sly-eval `(slynk:interactive-eval-region ,sexp) args))))
+        (if (plist-get args :startup)
+            (cl-remf args :startup)
+            (sly-mrepl--eval-for-repl
+             '(slynk-mrepl:guess-and-set-package "nyxt-user"))))
+      (if (plist-get args :return)
+          (car (apply #'sly-eval `(slynk::eval-region ,sexp) (map-delete args :return)))
+        (apply #'sly-eval `(slynk:interactive-eval-region ,sexp) args)))))
 
 (defun nyxt--system-process-p ()
   "Return non-nil if the Nyxt system process is currently running."
@@ -119,8 +123,7 @@ connect Sly to it.
 
 Additionally, you may specify an AUTOSTART-DELAY to invoke Nyxt features that
 might require some delay to be correctly loaded."
-  (let* ((sly-log-events nil)
-         (sly-default-connection nyxt-sly-connection))
+  (let* ((sly-log-events nil))
     (cond
      ((and (not (nyxt--system-process-p))
            (not (nyxt--sly-connected-p))
@@ -142,18 +145,19 @@ might require some delay to be correctly loaded."
                             (while (or (not (sly-connected-p))
                                        (not (nyxt--sly-connected-p))
                                        (not nyxt-sly-connection))
-                              (nyxt-sly-connect)
-                              (sleep-for 0.1))
+                              (sleep-for 0.1)
+                              (nyxt-sly-connect))
                             (and focus (nyxt--exwm-focus-window))
-                            (nyxt--sly-eval sexps))))
+                            (nyxt--sly-eval sexps :startup t))))
             ((or (string-match (rx (+ any) "Deleting socket") output)
                  (/= (process-exit-status process) 0))
              (setq nyxt-process nil)
              (setq nyxt-sly-connection nil)))))))
      ((or (nyxt--system-process-p)
           nyxt-process)
-      (and focus (nyxt--exwm-focus-window))
-      (nyxt--sly-eval sexps)))))
+      (let ((sly-default-connection (or nyxt-sly-connection (nyxt-sly-connect))))
+        (and focus (nyxt--exwm-focus-window))
+        (nyxt--sly-eval sexps))))))
 
 (defun nyxt--extension-p (system &optional symbol)
   "Check if Nyxt extension SYSTEM exists in the ASDF source registry.
@@ -175,13 +179,12 @@ Optionally test if the extension's SYMBOL is bound."
     (require 'ol)
     (org-link-store-props
      :type "nyxt"
-     :link  (substring
-             (if (nyxt--extension-p "nx-router" "trace-url")
-                 (nyxt--sly-eval
-                  '(render-url (nx-router:trace-url (url (current-buffer)))))
-               (nyxt--sly-eval '(render-url (url (current-buffer)))))
-             1 -1)
-     :description (substring (nyxt--sly-eval '(title (current-buffer))) 1 -1))))
+     :link  (if (nyxt--extension-p "nx-router" "trace-url")
+                (nyxt--sly-eval
+                 '(render-url (nx-router:trace-url (url (current-buffer))))
+                 :return t)
+              (nyxt--sly-eval '(render-url (url (current-buffer))) :return t))
+     :description (nyxt--sly-eval '(title (current-buffer)) :return t))))
 
 ;;;###autoload
 (defun nyxt-sly-connect ()
@@ -199,10 +202,11 @@ Optionally test if the extension's SYMBOL is bound."
 (defun nyxt-quit ()
   "Quit the Nyxt process."
   (interactive)
-  (ignore-errors
-    (kill-process nyxt-process))
-  (setq nyxt-process nil)
-  (setq nyxt-sly-connection nil))
+  (when nyxt-process
+    (ignore-errors
+      (kill-process nyxt-process))
+    (setq nyxt-process nil)
+    (setq nyxt-sly-connection nil)))
 
 ;;;###autoload
 (cl-defun nyxt-capture (template &key (roam-p nil))
@@ -231,13 +235,22 @@ If ROAM-P, store it in the corresponding Org Roam capture TEMPLATE."
    :focus t :autostart t :autostart-delay 2))
 
 ;;;###autoload
-(defun nyxt-change-theme (theme)
-  "Switch to THEME in Nyxt."
+(defun nyxt-load-theme (theme)
+  "Load THEME in Nyxt."
   (interactive
-   (list (completing-read "Theme:" custom-known-themes)))
-  (if (nyxt--extension-p "nx-tailor" "select-theme")
-      (nyxt-run
-       `(nx-tailor:select-theme ,theme))
+   (list
+    (intern
+     (completing-read
+      "Load theme: "
+      (mapcar
+       (lambda (theme)
+         (intern (downcase (symbol-name theme))))
+       (read
+        (nyxt--sly-eval
+         '(mapcar #'tailor::id
+                  (tailor:themes (tailor::current-tailor-mode))))))))))
+  (if (nyxt--extension-p "nx-tailor" "load-theme")
+      (nyxt-run `(nx-tailor:load-theme ',theme))
     (error "You need the nx-tailor extension to change Nyxt theme")))
 
 ;;;###autoload
@@ -285,6 +298,7 @@ If ROAM-P, store it in the corresponding Org Roam capture TEMPLATE."
 
 (define-prefix-command 'nyxt-map)
 (let ((map nyxt-map))
+  (define-key map "y" #'nyxt-sly-connect)
   (define-key map "i" #'nyxt-init)
   (define-key map "q" #'nyxt-quit)
   (define-key map "s" #'nyxt-search)

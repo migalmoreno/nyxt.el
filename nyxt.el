@@ -34,6 +34,12 @@
   "Nyxt browser integrations and tweaks."
   :group 'external)
 
+(defcustom nyxt-autostart-delay 0
+  "Number of seconds to delay the evaluation of expressions
+for upon Nyxt startup."
+  :type 'integer
+  :group 'nyxt)
+
 (defcustom nyxt-port 4006
   "Default port to use for the Slynk connection to Nyxt."
   :type 'integer
@@ -58,6 +64,8 @@
 (defvar nyxt-map nil
   "Map to bind `nyxt' commands to.")
 
+(defvar nyxt-autostart-p nil)
+
 (defun nyxt--sly-connected-p ()
   "Indicate whether there's currently a connection to `nyxt-port'."
   (cl-find-if (lambda (p)
@@ -66,19 +74,31 @@
 
 (cl-defun nyxt--sly-eval (sexps &rest args &key &allow-other-keys)
   "Evaluate SEXPS and ARGS in the current Nyxt Sly connection."
-  (when-let ((sexp (if (every #'consp sexps)
-                       (mapconcat #'prin1-to-string sexps "")
-                     (prin1-to-string sexps)))
-             (sly-buffer (sly-mrepl--find-buffer nyxt-sly-connection)))
-    (with-current-buffer sly-buffer
-      (unless (string= (sly-current-package) "nyxt-user")
-        (if (plist-get args :startup)
-            (cl-remf args :startup)
-            (sly-mrepl--eval-for-repl
-             '(slynk-mrepl:guess-and-set-package "nyxt-user"))))
-      (if (plist-get args :return)
-          (car (apply #'sly-eval `(slynk::eval-region ,sexp) (map-delete args :return)))
-        (apply #'sly-eval `(slynk:interactive-eval-region ,sexp) args)))))
+  (let ((sexp (if (every #'consp sexps)
+                  (mapconcat #'prin1-to-string sexps "")
+                (prin1-to-string sexps)))
+        (sly-dispatching-connection (if (nyxt--sly-connected-p)
+                                        nyxt-sly-connection
+                                      (nyxt-sly-connect))))
+    (cl-flet ((eval-sexp
+               ()
+               (let ((sly-dispatching-connection nyxt-sly-connection))
+                 (apply #'sly-eval `(slynk:interactive-eval-region ,sexp) args))))
+      (while (not (sly-mrepl--find-buffer sly-dispatching-connection))
+        (sleep-for 0.1))
+      (with-current-buffer (sly-mrepl--find-buffer sly-dispatching-connection)
+        (while (not sly-mrepl--local-channel)
+          (sleep-for 0.1))
+        (while (not (sly-current-package))
+          (sleep-for 0.1))
+        (unless (string= (sly-current-package) "nyxt-user")
+          (sly-mrepl--eval-for-repl
+           '(slynk-mrepl:guess-and-set-package "nyxt-user")))
+        (if nyxt-autostart-p
+            (progn
+              (run-at-time nyxt-autostart-delay nil #'eval-sexp)
+              (setq nyxt-autostart-p nil))
+          (eval-sexp))))))
 
 (defun nyxt--system-process-p ()
   "Return non-nil if the Nyxt system process is currently running."
@@ -114,15 +134,12 @@ focus on it, otherwise switch to its underlying buffer."
             (switch-to-buffer-other-window nyxt-buffer))
         (switch-to-buffer nyxt-buffer)))))
 
-(cl-defun nyxt-run (sexps &key (focus nil) (autostart nil) (autostart-delay 0))
+(cl-defun nyxt-run (sexps &key (focus nil) (autostart nil))
   "Evaluate SEXPS in the context of the current Nyxt connection.
 
 If FOCUS, change focus to the Nyxt exwm workspace.  If AUTOSTART is non-nil
 and a Nyxt system process is not found, it will automatically create one and
-connect Sly to it.
-
-Additionally, you may specify an AUTOSTART-DELAY to invoke Nyxt features that
-might require some delay to be correctly loaded."
+connect Sly to it."
   (let* ((sly-log-events nil))
     (cond
      ((and (not (nyxt--system-process-p))
@@ -140,24 +157,23 @@ might require some delay to be correctly loaded."
            (forward-line 0)
            (cond
             ((string-match (rx (+ any) "Slynk server started at port") output)
-             (run-at-time autostart-delay nil
-                          (lambda ()
-                            (while (or (not (sly-connected-p))
-                                       (not (nyxt--sly-connected-p))
-                                       (not nyxt-sly-connection))
-                              (sleep-for 0.1)
-                              (nyxt-sly-connect))
-                            (and focus (nyxt--exwm-focus-window))
-                            (nyxt--sly-eval sexps :startup t))))
+             (while (or (not (sly-current-connection))
+                        (not (sly-connected-p))
+                        (not (nyxt--sly-connected-p))
+                        (not nyxt-sly-connection))
+               (nyxt-sly-connect)
+               (sleep-for 0.1))
+             (and focus (nyxt--exwm-focus-window))
+             (setq nyxt-autostart-p t)
+             (nyxt--sly-eval sexps))
             ((or (string-match (rx (+ any) "Deleting socket") output)
                  (/= (process-exit-status process) 0))
              (setq nyxt-process nil)
              (setq nyxt-sly-connection nil)))))))
      ((or (nyxt--system-process-p)
           nyxt-process)
-      (let ((sly-default-connection (or nyxt-sly-connection (nyxt-sly-connect))))
-        (and focus (nyxt--exwm-focus-window))
-        (nyxt--sly-eval sexps))))))
+      (and focus (nyxt--exwm-focus-window))
+      (nyxt--sly-eval sexps)))))
 
 (defun nyxt--extension-p (system &optional symbol)
   "Check if Nyxt extension SYSTEM exists in the ASDF source registry.
@@ -180,11 +196,11 @@ Optionally test if the extension's SYMBOL is bound."
     (org-link-store-props
      :type "nyxt"
      :link  (if (nyxt--extension-p "nx-router" "trace-url")
-                (nyxt--sly-eval
-                 '(render-url (nx-router:trace-url (url (current-buffer))))
-                 :return t)
-              (nyxt--sly-eval '(render-url (url (current-buffer))) :return t))
-     :description (nyxt--sly-eval '(title (current-buffer)) :return t))))
+                (read
+                 (nyxt--sly-eval
+                  '(render-url (nx-router:trace-url (url (current-buffer))))))
+              (read (nyxt--sly-eval '(render-url (url (current-buffer))))))
+     :description (read (nyxt--sly-eval '(title (current-buffer)))))))
 
 ;;;###autoload
 (defun nyxt-sly-connect ()
@@ -232,7 +248,7 @@ If ROAM-P, store it in the corresponding Org Roam capture TEMPLATE."
    `(buffer-load
      (first (nyxt::input->queries ,query))
      :buffer (make-buffer-focus))
-   :focus t :autostart t :autostart-delay 2))
+   :focus t :autostart t))
 
 ;;;###autoload
 (defun nyxt-load-theme (theme)

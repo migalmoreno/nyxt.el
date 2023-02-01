@@ -6,7 +6,7 @@
 ;; Version: 0.1.0
 ;; Keywords: tools, processes
 ;; URL: https://git.sr.ht/~conses/nyxt.el
-;; Package-Requires: ((emacs "25.1") sly cl-lib)
+;; Package-Requires: ((emacs "25.1") sly)
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -35,8 +35,7 @@
   :group 'external)
 
 (defcustom nyxt-autostart-delay 0
-  "Number of seconds to delay the evaluation of expressions
-for upon Nyxt startup."
+  "Seconds to delay the evaluation of expressions for upon Nyxt startup."
   :type 'integer
   :group 'nyxt)
 
@@ -74,7 +73,7 @@ for upon Nyxt startup."
 
 (cl-defun nyxt--sly-eval (sexps &rest args &key &allow-other-keys)
   "Evaluate SEXPS and ARGS in the current Nyxt Sly connection."
-  (let ((sexp (if (every #'consp sexps)
+  (let ((sexp (if (cl-every #'consp sexps)
                   (mapconcat #'prin1-to-string sexps "")
                 (prin1-to-string sexps)))
         (sly-dispatching-connection (if (nyxt--sly-connected-p)

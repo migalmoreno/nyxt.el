@@ -1,5 +1,5 @@
 # -*- mode: org; org-html-head-include-default-style: nil; org-html-postamble: nil; -*-
-#+OPTIONS: toc:nil
+#+OPTIONS: toc:nil num:nil
 * nyxt.el
 =nyxt.el= consists of custom logic to interact with [[https://nyxt.atlas.engineer/][Nyxt]] from Emacs. In contrast to [[https://github.com/ag91/emacs-with-nyxt][emacs-with-nyxt]], it doesn't predefine any Nyxt configuration and only bundles a couple of interactive helpers. Users are encouraged to use the entry point function =nyxt-run= to build their own functionality.
 

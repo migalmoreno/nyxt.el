@@ -295,17 +295,6 @@ If ROAM-P, store it in the corresponding Org Roam capture TEMPLATE."
    '(nyxt/document-mode::scroll-up)))
 
 ;;;###autoload
-(defun nyxt-set-transient-map ()
-  "Set a transient map for transient `nyxt' commands."
-  (interactive)
-  (set-transient-map
-   (let ((map (make-sparse-keymap)))
-     (define-key map "v" 'nyxt-scroll-other-window)
-     (define-key map "V" 'nyxt-scroll-other-window-down)
-     map)
-   t))
-
-;;;###autoload
 (defun nyxt-default-keybindings ()
   "Bind the `C-c y' prefix to `nyxt' commands."
   (interactive)
@@ -319,7 +308,11 @@ If ROAM-P, store it in the corresponding Org Roam capture TEMPLATE."
   (define-key map "s" #'nyxt-search)
   (define-key map "w" #'nyxt-copy-url)
   (define-key map "k" #'nyxt-delete-current-buffer)
-  (define-key map "v" #'nyxt-set-transient-map))
+  (define-key map "v" #'nyxt-scroll-other-window)
+  (define-key map "V" #'nyxt-scroll-other-window-down)
+  (when (>= emacs-major-version 28)
+    (put #'nyxt-scroll-other-window 'repeat-map 'nyxt-map)
+    (put #'nyxt-scroll-other-window-down 'repeat-map 'nyxt-map)))
 
 (provide 'nyxt)
 ;;; nyxt.el ends here

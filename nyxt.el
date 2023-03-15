@@ -79,10 +79,10 @@
         (sly-dispatching-connection (if (nyxt--sly-connected-p)
                                         nyxt-sly-connection
                                       (nyxt-sly-connect))))
-    (cl-flet ((eval-sexp
-               ()
-               (let ((sly-dispatching-connection nyxt-sly-connection))
-                 (apply #'sly-eval `(slynk:interactive-eval-region ,sexp) args))))
+    (cl-flet ((eval-sexp ()
+                (let ((sly-dispatching-connection nyxt-sly-connection))
+                  (apply #'sly-eval
+                         `(slynk:interactive-eval-region ,sexp) args))))
       (while (not (sly-mrepl--find-buffer sly-dispatching-connection))
         (sleep-for 0.1))
       (with-current-buffer (sly-mrepl--find-buffer sly-dispatching-connection)

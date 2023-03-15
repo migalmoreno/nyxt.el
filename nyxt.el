@@ -185,22 +185,6 @@ Optionally test if the extension's SYMBOL is bound."
           (not (string-match "NIL" sym)))
       (not (string= (downcase sys) "nil")))))
 
-(defun nyxt-store-link ()
-  "Store the current page link via Org mode."
-  (when (and (or nyxt-process
-                 (nyxt--system-process-p))
-             (when (require 'exwm nil t)
-               (string-match "Nyxt:" (buffer-name (current-buffer)))))
-    (require 'ol)
-    (org-link-store-props
-     :type "nyxt"
-     :link  (if (nyxt--extension-p "nx-router" "trace-url")
-                (read
-                 (nyxt--sly-eval
-                  '(render-url (nx-router:trace-url (url (current-buffer))))))
-              (read (nyxt--sly-eval '(render-url (url (current-buffer))))))
-     :description (read (nyxt--sly-eval '(title (current-buffer)))))))
-
 ;;;###autoload
 (defun nyxt-sly-connect ()
   "Connect to a Slynk server via Sly to interact with the Nyxt browser."
@@ -222,22 +206,6 @@ Optionally test if the extension's SYMBOL is bound."
       (kill-process nyxt-process))
     (setq nyxt-process nil)
     (setq nyxt-sly-connection nil)))
-
-;;;###autoload
-(cl-defun nyxt-capture (template &key (roam-p nil))
-  "Store and capture the current Nyxt page link in Org TEMPLATE.
-
-If ROAM-P, store it in the corresponding Org Roam capture TEMPLATE."
-  (interactive)
-  (with-current-buffer
-      (car (cl-remove-if-not (lambda (buffer)
-                               (string-match "Nyxt:"
-                                             (buffer-name buffer)))
-                             (buffer-list)))
-    (org-store-link t t)
-    (if roam-p
-        (org-roam-capture nil template)
-      (org-capture nil template))))
 
 ;;;###autoload
 (defun nyxt-search (query)

@@ -11,23 +11,22 @@ To install the package, simply point to the package in your =load-path=.
 (add-to-list 'load-path "/path/to/nyxt.el")
 #+end_src
 
-The easiest way to contribute to the project is to use the [[https://guix.gnu.org/][GNU Guix]] package manager and start a development environment at the root of the project by invoking the following commands:
+The easiest way to contribute to this project is to use the [[https://guix.gnu.org/][GNU Guix]] package manager and start developing on the local checkout by invoking the following commands:
 
 #+begin_src sh
 cd /path/to/nyxt.el
 guix shell --pure
 #+end_src
 
-By default, this package will spawn a Nyxt process with the =-e (start-slynk)= arguments so that it can connect to the Slynk process. However, you're free to modify the startup command and arguments, such as for development purposes.
+An example configuration might look like this:
 
 #+begin_src elisp
+(define-key global-map (kbd "C-c y") 'nyxt-map)
 (with-eval-after-load 'nyxt
-  (custom-set-variables
-   '(nyxt-path (executable-find "guix"))
-   '(nyxt-startup-flags '("shell" "-D" "-f" "path/to/nyxt/build-scripts/nyxt.scm"
-                          "--" "path/to/nyxt/nyxt" "-e" "(start-slynk)"))))
+  (setopt nyxt-path (executable-find "guix"))
+  (setopt nyxt-startup-flags '("shell" "-D" "-f" "path/to/nyxt/build-scripts/nyxt.scm" "--" "path/to/nyxt/nyxt" "-e" "(start-slynk)")))
 #+end_src
 
-If you'd like to bind the default keybindings provided under the ~C-c y~ prefix keymap, ensure to include =nyxt-default-keybindings= in your Emacs initialization file. You should also have a call to =sly-setup= in your initialization file, otherwise the first time =nyxt-run= is executed won't prompt you with a SLY REPL.
+Above, we first set the default bindings included in the =nyxt-map= to the ~C-c y~ global binding. By default, this package will spawn a Nyxt process with the =-e (start-slynk)= flags so that it can launch and connect to a Slynk process. However, as shown above, you're free to modify the executable path and the flags supplied to it, such as if you're developing on Nyxt using the [[https://guix.gnu.org][GNU Guix]] package manager.
 
 You can use the project's [[https://lists.sr.ht/~conses/nyxt.el][mailing list]] to send feedback, patches or open discussions. Bugs should be reported on the project's [[https://todo.sr.ht/~conses/nyxt.el][bug-tracker]].

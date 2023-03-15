@@ -1,6 +1,6 @@
 ;;; nyxt.el --- Emacs integration with Nyxt  -*- lexical-binding: t; -*-
 
-;; Copyright ©2022 conses <contact@conses.eu>
+;; Copyright © 2022, 2023 conses <contact@conses.eu>
 
 ;; Author: conses <contact@conses.eu>
 ;; Version: 0.1.0

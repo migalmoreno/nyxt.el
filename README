@@ -1,7 +1,7 @@
 # -*- mode: org; org-html-head-include-default-style: nil; org-html-postamble: nil; -*-
 #+OPTIONS: toc:nil num:nil
 * nyxt.el
-=nyxt.el= consists of custom logic to interact with [[https://nyxt.atlas.engineer/][Nyxt]] from Emacs. In contrast to [[https://github.com/ag91/emacs-with-nyxt][emacs-with-nyxt]], it doesn't predefine any Nyxt configuration and only bundles a couple of interactive helpers. Users are encouraged to use the entry point function =nyxt-run= to build their own functionality.
+=nyxt.el= consists of custom logic to interact with [[https://nyxt.atlas.engineer/][Nyxt]] from Emacs. In contrast to [[https://github.com/ag91/emacs-with-nyxt][emacs-with-nyxt]], it doesn't bundle any Nyxt configuration and only includes a couple of interactive helpers for some common Nyxt operations. Users are encouraged to use the entry point function =nyxt-run= to build their own functionality.
 
 This package requires the [[https://github.com/joaotavora/sly][SLY]] Emacs package to interact with the underlying Nyxt Lisp image. If you're an [[https://github.com/ch11ng/exwm][EXWM]] user, you'll also have the ability to make commands focus on the corresponding Nyxt window for a more seamless experience.
 

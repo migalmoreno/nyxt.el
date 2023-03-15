@@ -26,9 +26,10 @@
 
 ;;; Code:
 
-(require 'sly)
-(eval-when-compile
-  (require 'cl-lib))
+(eval-and-compile
+  (require 'cl-lib)
+  (require 'sly)
+  (sly-setup))
 
 (defgroup nyxt nil
   "Nyxt browser integrations and tweaks."
@@ -111,7 +112,7 @@
 
 Switch to the corresponding EXWM workspace and if the Nyxt window is visible,
 focus on it, otherwise switch to its underlying buffer."
-  (when (require 'exwm nil t)
+  (when (eval-and-compile (require 'exwm nil t))
     (when-let* ((nyxt-buffer
                  (car (cl-remove-if-not
                        (lambda (buffer)

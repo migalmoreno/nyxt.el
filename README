@@ -29,4 +29,4 @@ An example configuration might look like this:
 
 Above, we first set the default bindings included in the =nyxt-map= to the ~C-c y~ global binding. By default, this package will spawn a Nyxt process with the =-e (start-slynk)= flags so that it can launch and connect to a Slynk process. However, as shown above, you're free to modify the executable path and the flags supplied to it, such as if you're developing on Nyxt using the [[https://guix.gnu.org][GNU Guix]] package manager.
 
-You can use the project's [[https://lists.sr.ht/~conses/nyxt.el][mailing list]] to send feedback, patches or open discussions. Bugs should be reported on the project's [[https://todo.sr.ht/~conses/nyxt.el][bug-tracker]].
+You can use the project's [[https://lists.sr.ht/~mmoreno/nyxt.el][mailing list]] to send feedback, patches or open discussions. Bugs should be reported on the project's [[https://todo.sr.ht/~mmoreno/nyxt.el][bug-tracker]].

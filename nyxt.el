@@ -254,14 +254,14 @@ Optionally test if the extension's SYMBOL is bound."
   "Scroll the Nyxt window."
   (interactive)
   (nyxt-run
-   '(nyxt/document-mode::scroll-down)))
+   '(nyxt/mode/document::scroll-down)))
 
 ;;;###autoload
 (defun nyxt-scroll-other-window-down ()
   "Scroll the Nyxt window upward."
   (interactive)
   (nyxt-run
-   '(nyxt/document-mode::scroll-up)))
+   '(nyxt/mode/document::scroll-up)))
 
 (define-prefix-command 'nyxt-map)
 (let ((map nyxt-map))

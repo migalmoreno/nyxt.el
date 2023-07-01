@@ -1,11 +1,11 @@
 ;;; nyxt.el --- Emacs integration with Nyxt  -*- lexical-binding: t; -*-
 
-;; Copyright © 2022, 2023 conses <contact@conses.eu>
+;; Copyright © 2022, 2023 Miguel Ángel Moreno <mail@migalmoreno.com>
 
-;; Author: conses <contact@conses.eu>
-;; Version: 0.1.0
+;; Author: Miguel Ángel Moreno <mail@migalmoreno.com>
+;; Version: 0.1.1
 ;; Keywords: tools, processes
-;; URL: https://git.sr.ht/~conses/nyxt.el
+;; URL: https://github.com/migalmoreno/nyxt.el
 ;; Package-Requires: ((emacs "25.1") sly)
 
 ;; This program is free software; you can redistribute it and/or modify

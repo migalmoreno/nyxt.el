@@ -231,7 +231,7 @@ Optionally test if the extension's SYMBOL is bound."
          (intern (downcase (symbol-name theme))))
        (read
         (nyxt--sly-eval
-         '(mapcar #'tailor::id
+         '(mapcar #'tailor::name
                   (tailor:themes (tailor::current-tailor-mode))))))))))
   (if (nyxt--extension-p "nx-tailor" "load-theme")
       (nyxt-run `(nx-tailor:load-theme ',theme))

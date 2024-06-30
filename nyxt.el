@@ -221,7 +221,9 @@ Optionally test if the extension's SYMBOL is bound."
 
 ;;;###autoload
 (defun nyxt-load-theme (theme)
-  "Load THEME in Nyxt."
+  "Load THEME in Nyxt.
+THEME can be the name of one of the currently loaded `tailor:user-theme' themes
+or a new quoted `tailor:user-theme' instance."
   (interactive
    (list
     (intern
@@ -235,7 +237,9 @@ Optionally test if the extension's SYMBOL is bound."
          '(mapcar #'tailor::name
                   (tailor:themes (tailor::current-tailor-mode))))))))))
   (if (nyxt--extension-p "nx-tailor" "load-theme")
-      (nyxt-run `(nx-tailor:load-theme ',theme))
+      (nyxt-run (if (listp theme)
+                    `(nx-tailor:load-theme ,theme)
+                  `(nx-tailor:load-theme ',theme)))
     (error "You need the nx-tailor extension to change Nyxt theme")))
 
 ;;;###autoload

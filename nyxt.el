@@ -108,39 +108,11 @@
                            (assoc-default 'comm (process-attributes pid))))
            (list-system-processes)))
 
-(defun nyxt--exwm-focus-window ()
-  "Handle Nyxt's EXWM window.
-
-Switch to the corresponding EXWM workspace and if the Nyxt window is visible,
-focus on it, otherwise switch to its underlying buffer."
-  (when (eval-and-compile (require 'exwm nil t))
-    (when-let* ((nyxt-buffer
-                 (car (cl-remove-if-not
-                       (lambda (buffer)
-                         (string-match "Nyxt:" (buffer-name buffer)))
-                       (buffer-list))))
-                (exwm-workspace
-                 (window-frame (or (get-buffer-window nyxt-buffer t)
-                                   (with-current-buffer nyxt-buffer
-                                     (set-window-buffer
-                                      (frame-selected-window exwm--frame)
-                                      (current-buffer))
-                                     (get-buffer-window (current-buffer) t))))))
-      (exwm-workspace-switch (exwm-workspace--position exwm-workspace))
-      (if (and (= (exwm-workspace--position exwm-workspace--current)
-                  (exwm-workspace--position exwm-workspace))
-               (> (length (window-list exwm-workspace)) 1))
-          (if (get-buffer-window nyxt-buffer)
-              (select-window (get-buffer-window nyxt-buffer))
-            (switch-to-buffer-other-window nyxt-buffer))
-        (switch-to-buffer nyxt-buffer)))))
-
-(cl-defun nyxt-run (sexps &key (focus nil) (autostart nil))
+(cl-defun nyxt-run (sexps &key (autostart nil))
   "Evaluate SEXPS in the context of the current Nyxt connection.
 
-If FOCUS, change focus to the Nyxt exwm workspace.  If AUTOSTART is non-nil
-and a Nyxt system process is not found, it will automatically create one and
-connect Sly to it."
+If AUTOSTART is non-nil and a Nyxt system process is not found it will
+automatically create a Sly connection for it."
   (let* ((sly-log-events nil))
     (cond
      ((and (not (nyxt--system-process-p))
@@ -164,16 +136,13 @@ connect Sly to it."
                         (not nyxt-sly-connection))
                (nyxt-sly-connect)
                (sleep-for 0.1))
-             (and focus (nyxt--exwm-focus-window))
              (setq nyxt-autostart-p t)
              (nyxt--sly-eval sexps))
             ((or (string-match (rx (+ any) "Deleting socket") output)
                  (/= (process-exit-status process) 0))
              (setq nyxt-process nil)
              (setq nyxt-sly-connection nil)))))))
-     ((or (nyxt--system-process-p)
-          nyxt-process)
-      (and focus (nyxt--exwm-focus-window))
+     ((or (nyxt--system-process-p) nyxt-process)
       (nyxt--sly-eval sexps)))))
 
 (defun nyxt--extension-p (system &optional symbol)
@@ -197,7 +166,7 @@ Optionally test if the extension's SYMBOL is bound."
 (defun nyxt-init ()
   "Start Nyxt and focus on its window."
   (interactive)
-  (nyxt-run nil :focus t :autostart t))
+  (nyxt-run nil :autostart t))
 
 ;;;###autoload
 (defun nyxt-quit ()
@@ -217,7 +186,7 @@ Optionally test if the extension's SYMBOL is bound."
    `(buffer-load
      (first (nyxt::input->queries ,query))
      :buffer (make-buffer-focus))
-   :focus t :autostart t))
+   :autostart t))
 
 ;;;###autoload
 (defun nyxt-load-theme (theme)

@@ -268,10 +268,17 @@ or a new quoted `tailor:user-theme' instance."
   (nyxt-run
    '(nyxt/mode/document::scroll-up)))
 
+;;;###autoload
+(defun nyxt-insert-url ()
+  "Insert the current Nyxt buffer's URL into the current buffer."
+  (interactive)
+  (insert (read (nyxt--sly-eval '(render-url (url (current-buffer)))))))
+
 (define-prefix-command 'nyxt-map)
 (let ((map nyxt-map))
   (define-key map "y" #'nyxt-sly-connect)
   (define-key map "i" #'nyxt-init)
+  (define-key map "y" #'nyxt-insert-url)
   (define-key map "q" #'nyxt-quit)
   (define-key map "s" #'nyxt-search)
   (define-key map "w" #'nyxt-copy-url)

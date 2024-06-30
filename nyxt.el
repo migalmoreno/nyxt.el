@@ -1,6 +1,6 @@
 ;;; nyxt.el --- Emacs integration with Nyxt  -*- lexical-binding: t; -*-
 
-;; Copyright © 2022, 2023 Miguel Ángel Moreno <mail@migalmoreno.com>
+;; Copyright © 2022, 2023, 2024 Miguel Ángel Moreno <mail@migalmoreno.com>
 
 ;; Author: Miguel Ángel Moreno <mail@migalmoreno.com>
 ;; Version: 0.1.1

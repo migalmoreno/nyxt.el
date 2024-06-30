@@ -61,6 +61,7 @@
 (defvar nyxt-sly-connection nil
   "The current Sly connection for communicating with Nyxt.")
 
+;;;###autoload (autoload 'nyxt-map "nyxt" "Map to bind `nyxt' commands to." nil 'keymap)
 (defvar nyxt-map nil
   "Map to bind `nyxt' commands to.")
 

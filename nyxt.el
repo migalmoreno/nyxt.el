@@ -248,6 +248,7 @@ or a new quoted `tailor:user-theme' instance."
   (define-key map "y" #'nyxt-sly-connect)
   (define-key map "i" #'nyxt-init)
   (define-key map "y" #'nyxt-insert-url)
+  (define-key map "t" #'nyxt-load-theme)
   (define-key map "q" #'nyxt-quit)
   (define-key map "s" #'nyxt-search)
   (define-key map "w" #'nyxt-copy-url)

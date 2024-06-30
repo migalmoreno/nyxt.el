@@ -33,9 +33,10 @@
      (list nyxt))
     (propagated-inputs
      (list emacs-sly))
-    (home-page "https://git.sr.ht/~conses/nyxt.el")
-    (synopsis "Helper functions to interact with Nyxt.")
-    (description "nyxt.el consists of many helper functions to interact with Nyxt from Emacs.")
+    (home-page "https://git.migalmoreno.com/nyxt.el")
+    (synopsis "Interact with Nyxt from Emacs")
+    (description "This package consists of custom logic to interact with Nyxt
+from Emacs.")
     (license license:gpl3+)))
 
 emacs-nyxt

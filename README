@@ -1,4 +1,4 @@
-# -*- mode: org; org-html-head-include-default-style: nil; org-html-postamble: nil; after-save-hook: org-md-export-to-markdown; -*-
+# -*- mode: org; org-html-head-include-default-style: nil; org-html-postamble: nil; -*-
 #+OPTIONS: toc:nil num:nil
 * nyxt.el
 =nyxt.el= consists of custom logic to interact with [[https://nyxt.atlas.engineer/][Nyxt]] from Emacs. In contrast to other similar packages, it doesn't bundle any Nyxt configuration for you by default. Instead, it aims at providing a rich feature set of custom interactive functions via the =nyxt-run= entry function. This package requires the [[https://github.com/joaotavora/sly][SLY]] Emacs package to interact with the underlying Nyxt Lisp image.

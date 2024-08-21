@@ -5,7 +5,7 @@
 ;; Author: Miguel Ángel Moreno <mail@migalmoreno.com>
 ;; Version: 0.1.1
 ;; Keywords: tools, processes
-;; URL: https://github.com/migalmoreno/nyxt.el
+;; URL: https://git.migalmoreno.com/nyxt.el
 ;; Package-Requires: ((emacs "25.1") sly)
 
 ;; This program is free software; you can redistribute it and/or modify

@@ -3,7 +3,7 @@
 ;; Copyright © 2022, 2023, 2024 Miguel Ángel Moreno <mail@migalmoreno.com>
 
 ;; Author: Miguel Ángel Moreno <mail@migalmoreno.com>
-;; Version: 0.1.1
+;; Version: 0.2.0
 ;; Keywords: tools, processes
 ;; URL: https://git.migalmoreno.com/nyxt.el
 ;; Package-Requires: ((emacs "25.1") sly)

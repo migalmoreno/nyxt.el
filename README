@@ -1,28 +1,41 @@
 # -*- mode: org; org-html-head-include-default-style: nil; org-html-postamble: nil; -*-
 #+OPTIONS: toc:nil num:nil
-* nyxt.el
+#+TITLE: nyxt.el
 =nyxt.el= consists of custom logic to interact with [[https://nyxt.atlas.engineer/][Nyxt]] from Emacs. In contrast to other similar packages, it doesn't bundle any Nyxt configuration for you by default. Instead, it aims at providing a rich feature set of custom interactive functions via the =nyxt-run= entry function. This package requires the [[https://github.com/joaotavora/sly][SLY]] Emacs package to interact with the underlying Nyxt Lisp image.
 
-To install the package, simply point to the package in your =load-path=.
+* Installation
+To install the package manually, simply point to the checkout in your =load-path=.
 
 #+begin_src elisp
 (add-to-list 'load-path "/path/to/nyxt.el")
 #+end_src
 
-If you'd like to contribute to the package and get the project set up quickly, it's highly encouraged you install the [[https://guix.gnu.org/][GNU Guix]] package manager and start developing on the local checkout by invoking the following commands:
+Alternatively, if you want to get a development environment set up quickly, it's suggested you install a package manager such as [[https://guix.gnu.org/][GNU Guix]] or [[https://nixos.org/][Nix]] and start developing on the local package checkout with these commands:
+
+For GNU Guix:
 
 #+begin_src sh
-cd /path/to/nyxt.el
 guix shell --pure
 #+end_src
 
-An example configuration might look like this:
+For Nix:
+
+#+begin_src sh
+nix develop
+#+end_src
+
+* Usage
+An example configuration for =nyxt.el= might look like this:
 
 #+begin_src elisp
 (define-key global-map (kbd "C-c y") 'nyxt-map)
 (with-eval-after-load 'nyxt
-  (setq nyxt-path (executable-find "guix"))
-  (setq nyxt-startup-flags '("shell" "-D" "-f" "path/to/nyxt/build-scripts/nyxt.scm" "--" "path/to/nyxt/nyxt" "-e" "(start-slynk)")))
+  (setq nyxt-path "/path/to/nyxt")
+  (setq nyxt-startup-flags (list "-e" "(start-slynk)")))
 #+end_src
 
-Above, we set the default bindings included in the =nyxt-map= to the ~C-c y~ global binding and we modify the executable path and the flags supplied to it. By default, this package will spawn a Nyxt process with the =-e (start-slynk)= flag so it can launch and connect to a Slynk process, but you're free to change these flags, such as if you're developing on Nyxt using [[https://guix.gnu.org/manual/en/html_node/Invoking-guix-shell.html][guix shell]].
+You can set the default bindings included in the =nyxt-map= to any key combination, as well as add or modify existing commands in this map.
+
+You can also change the path to the Nyxt executable, such as if you're developing on Nyxt using its source.
+
+You can change the Nyxt process startup flags to your liking, but beware that this package needs a Slynk process to be started for it to interact with the Lisp image, so either include it in your Nyxt configuration or keep it in the startup flags.

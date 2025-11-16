@@ -195,20 +195,14 @@ THEME can be the name of one of the currently loaded `tailor:user-theme' themes
 or a new quoted `tailor:user-theme' instance."
   (interactive
    (list
-    (intern
-     (completing-read
-      "Load theme: "
-      (mapcar
-       (lambda (theme)
-         (intern (downcase (symbol-name theme))))
-       (read
-        (nyxt--sly-eval
-         '(mapcar #'tailor::name
-                  (tailor:themes (tailor::current-tailor-mode))))))))))
+    (completing-read
+     "Load theme: "
+     (read
+      (nyxt--sly-eval
+       '(mapcar #'tailor::name
+                (tailor:themes (tailor::current-tailor-mode))))))))
   (if (nyxt--extension-p "nx-tailor" "load-theme")
-      (nyxt-run (if (listp theme)
-                    `(nx-tailor:load-theme ,theme)
-                  `(nx-tailor:load-theme ',theme)))
+      (nyxt-run `(nx-tailor:load-theme ,theme))
     (error "You need the nx-tailor extension to change Nyxt theme")))
 
 ;;;###autoload

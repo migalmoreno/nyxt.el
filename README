@@ -10,7 +10,7 @@ To install the package manually, simply point to the checkout in your =load-path
 (add-to-list 'load-path "/path/to/nyxt.el")
 #+end_src
 
-Alternatively, if you want to get a development environment set up quickly, it's suggested you install a package manager such as [[https://guix.gnu.org/][GNU Guix]] or [[https://nixos.org/][Nix]] and start developing on the local package checkout with these commands:
+Alternatively, if you want to get a development environment set up quickly, it's recommended that you install a package manager such as [[https://guix.gnu.org/][GNU Guix]] or [[https://nixos.org/][Nix]] and start developing on the local package checkout with these commands:
 
 For GNU Guix:
 
